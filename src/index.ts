@@ -5,7 +5,7 @@ import {
     createAgent,
     debugLog,
     FirehoseSubscription,
-    BadBotHandler, GoodBotHandler
+    BadBotHandler, GoodBotHandler, OfflineHandler
 } from "bsky-event-handlers";
 import {TestHandler} from "./TestHandler.ts";
 
@@ -25,7 +25,8 @@ let goodAndBadBotHandler: HandlerController;
 async function initialize() {
     testAgentDetails = await authenticateAgent(testAgentDetails)
     testHandlerController = new HandlerController(testAgentDetails, [
-        TestHandler
+        TestHandler,
+        // new OfflineHandler("breakjuni", "Thanks for your help, but testing is over! Check back later ❤️")
     ], true)
 
     goodAndBadBotHandler = new HandlerController(testAgentDetails, [
@@ -46,4 +47,4 @@ try {
 /**
  * The client and listener for the firehose
  */
-const firehoseSubscription = new FirehoseSubscription([testHandlerController, goodAndBadBotHandler], 300);
+const firehoseSubscription = new FirehoseSubscription([testHandlerController, goodAndBadBotHandler], 250, 500);

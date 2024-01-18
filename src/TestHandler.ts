@@ -4,7 +4,7 @@ import {
     InputIsCommandValidator,
     AgentDetails,
     PostDetails,
-    getHumanReadableDateTimeStamp
+    getHumanReadableDateTimeStamp, FunctionAction, ReplyWithGeneratedTextAction, debugLog
 } from "bsky-event-handlers";
 import {RepoOp} from "@atproto/api/dist/client/types/com/atproto/sync/subscribeRepos";
 import {extractTimeFromInput, extractTimezone, extractTimezoneAbbreviation} from "time-decoding-utils";
@@ -38,6 +38,7 @@ function timestampMakerFunction(agentDetails: AgentDetails, op: RepoOp, postDeta
         console.log(humanReadable)
         output = `The ISO timestamp is ${iso}, and the Human readable timestamp is ${humanReadable} ${timezoneAbbreviation}`;
     }else{
+        debugLog("BAD INPUT", inputText);
         console.log("No time in input")
         output = "No time found in input"
     }
@@ -46,15 +47,10 @@ function timestampMakerFunction(agentDetails: AgentDetails, op: RepoOp, postDeta
 
 }
 
-// export let TestHandler = new PostHandler(
-//     [new InputIsCommandValidator(COMMAND, false)],
-//     [new FunctionAction(timestampMakerFunction), new ReplyWithGeneratedTextAction(timestampMakerFunction)],
-//     false
-// )
-
 export let TestHandler = new PostHandler(
     [new InputIsCommandValidator(COMMAND, false)],
-    [new ReplyWithInputAction("Thanks for your help, but testing is over! Check back later ❤️")],
+    [new FunctionAction(timestampMakerFunction), new ReplyWithGeneratedTextAction(timestampMakerFunction)],
     false
 )
+
 
