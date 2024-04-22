@@ -4,14 +4,36 @@ import {
     InputIsCommandValidator,
     AgentDetails,
     PostDetails,
-    getHumanReadableDateTimeStamp, FunctionAction, ReplyWithGeneratedTextAction, debugLog
+    getHumanReadableDateTimeStamp, FunctionAction, ReplyWithGeneratedTextAction, debugLog, HandlerAgent
 } from "bsky-event-handlers";
 import {RepoOp} from "@atproto/api/dist/client/types/com/atproto/sync/subscribeRepos";
 import {extractTimeFromInput, extractTimezone, extractTimezoneAbbreviation} from "time-decoding-utils";
 
 const COMMAND = "breakjuni"
 
-function timestampMakerFunction(agentDetails: AgentDetails, op: RepoOp, postDetails: PostDetails){
+export class TestHandler extends PostHandler {
+    constructor(public handlerAgent: HandlerAgent, private command: string) {
+        super(
+            [new InputIsCommandValidator(command, false)],
+            [
+                new FunctionAction(timestampMakerFunction),
+                new ReplyWithGeneratedTextAction(timestampMakerFunction)
+            ],
+            handlerAgent,
+        );
+    }
+
+    async handle(
+        op: RepoOp,
+        repo: string,
+    ): Promise<void> {
+        return super.handle(op, repo);
+    }
+}
+
+
+
+function timestampMakerFunction(handlerAgent: HandlerAgent, op: RepoOp, postDetails: PostDetails){
     let inputText = op.payload.text;
     let output = "";
     console.log(`input: ${inputText}`)
@@ -46,11 +68,5 @@ function timestampMakerFunction(agentDetails: AgentDetails, op: RepoOp, postDeta
     return output;
 
 }
-
-export let TestHandler = new PostHandler(
-    [new InputIsCommandValidator(COMMAND, false)],
-    [new FunctionAction(timestampMakerFunction), new ReplyWithGeneratedTextAction(timestampMakerFunction)],
-    false
-)
 
 
