@@ -19,7 +19,7 @@ async function initialize() {
     await testAgent.authenticate()
     DebugLog.info("INIT", 'Initialized!')
     let handlers = {
-        follow:{
+        follow: {
             c: [
                 new MessageHandler(
                     [new NewFollowerForUserValidator()],
