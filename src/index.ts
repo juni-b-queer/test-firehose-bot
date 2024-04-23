@@ -3,8 +3,9 @@ import {
     JetstreamSubscription,
     HandlerAgent,
     NewFollowerForUserValidator,
-    CreateSkeetAction,
-    MessageHandler
+    InputContainsValidator,
+    CreateSkeetHandler,
+    MessageHandler, FunctionAction, JetstreamMessage
 } from "bsky-event-handlers";
 
 const testAgent = new HandlerAgent(
@@ -19,11 +20,24 @@ async function initialize() {
     await testAgent.authenticate()
     DebugLog.info("INIT", 'Initialized!')
     let handlers = {
+        post: {
+            c: [
+                new CreateSkeetHandler(
+                    [new InputContainsValidator("h")],
+                    [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
+                        console.log("post");
+                    })],
+                    testAgent
+                )
+            ]
+        },
         follow: {
             c: [
                 new MessageHandler(
                     [new NewFollowerForUserValidator()],
-                    [new CreateSkeetAction("New Follower!")],
+                    [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
+                        console.log("New follower");
+                    })],
                     testAgent
                 )
             ]
@@ -35,6 +49,8 @@ async function initialize() {
     );
 }
 
-initialize();
+initialize().then(() =>{
+    jetstreamSubscription.createSubscription()
+});
 
 
