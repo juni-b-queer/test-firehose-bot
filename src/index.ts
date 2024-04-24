@@ -3,9 +3,9 @@ import {
     JetstreamSubscription,
     HandlerAgent,
     NewFollowerForUserValidator,
-    InputContainsValidator,
     CreateSkeetHandler,
-    MessageHandler, FunctionAction, JetstreamMessage
+    GoodBotHandler,
+    MessageHandler, FunctionAction, JetstreamMessage, ReplyToSkeetAction, InputIsCommandValidator
 } from "bsky-event-handlers";
 
 const testAgent = new HandlerAgent(
@@ -16,36 +16,37 @@ const testAgent = new HandlerAgent(
 
 let jetstreamSubscription: JetstreamSubscription;
 
+let handlers = {
+    post: {
+        c: [
+            new CreateSkeetHandler(
+                [new InputIsCommandValidator("plzwait")],
+                [new ReplyToSkeetAction("Reply")],
+                testAgent
+            ),
+            new GoodBotHandler(testAgent)
+        ]
+    },
+    follow: {
+        c: [
+            new MessageHandler(
+                [new NewFollowerForUserValidator(undefined)],
+                [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
+                    console.log("New follower");
+                })],
+                testAgent
+            )
+        ]
+    }
+}
+
 async function initialize() {
     await testAgent.authenticate()
     DebugLog.info("INIT", 'Initialized!')
-    let handlers = {
-        post: {
-            c: [
-                new CreateSkeetHandler(
-                    [new InputContainsValidator("h")],
-                    [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
-                        console.log("post");
-                    })],
-                    testAgent
-                )
-            ]
-        },
-        follow: {
-            c: [
-                new MessageHandler(
-                    [new NewFollowerForUserValidator()],
-                    [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
-                        console.log("New follower");
-                    })],
-                    testAgent
-                )
-            ]
-        }
-    }
+
     jetstreamSubscription = new JetstreamSubscription(
         handlers,
-        "ws://localhost:6008/subscribe"
+        <string>Bun.env.JETSTREAM_URL
     );
 }
 
