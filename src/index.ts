@@ -5,7 +5,7 @@ import {
     NewFollowerForUserValidator,
     CreateSkeetHandler,
     GoodBotHandler,
-    MessageHandler, FunctionAction, JetstreamMessage, ReplyToSkeetAction, InputIsCommandValidator
+    MessageHandler, FunctionAction,LogMessageAction, JetstreamMessage, ReplyToSkeetAction, InputIsCommandValidator, InputContainsValidator
 } from "bsky-event-handlers";
 
 const testAgent = new HandlerAgent(
@@ -21,7 +21,12 @@ let handlers = {
         c: [
             new CreateSkeetHandler(
                 [new InputIsCommandValidator("plzwait")],
-                [new ReplyToSkeetAction("Reply")],
+                [new LogMessageAction()],
+                testAgent
+            ),
+            new CreateSkeetHandler(
+                [new InputContainsValidator("hello")],
+                [new LogMessageAction()],
                 testAgent
             ),
             new GoodBotHandler(testAgent)
