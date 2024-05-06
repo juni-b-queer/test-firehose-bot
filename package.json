@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "run": "bun run src/index.ts",
-    "build": "bun build --target=bun ./src/index.ts --outfile=./build/index.ts"
+    "build": "bun build --target=bun ./src/index.ts --outfile=./build/index.ts",
+    "import-local-package": "bun link bsky-event-handlers"
   },
   "devDependencies": {
     "bun-types": "latest"
@@ -13,9 +14,9 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@atproto/api": "^0.6.23",
-    "atproto-firehose": "^0.2.2",
-    "bsky-event-handlers": "^0.4.8",
-    "time-decoding-utils": "^0.1.6"
+    "@atproto/api": "^0.12.7",
+    "bsky-event-handlers": "1.0.0",
+    "time-decoding-utils": "^0.1.7",
+    "ws": "^8.16.0"
   }
 }

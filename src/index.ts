@@ -1,50 +1,57 @@
 import {
-    HandlerController,
-    AgentDetails,
-    authenticateAgent,
-    createAgent,
-    debugLog,
-    FirehoseSubscription,
-    BadBotHandler, GoodBotHandler, OfflineHandler
-} from "bsky-event-handlers";
-import {TestHandler} from "./TestHandler.ts";
+    DebugLog,
+    JetstreamSubscription,
+    HandlerAgent,
+    NewFollowerForUserValidator,
+    CreateSkeetHandler,
+    GoodBotHandler,
+    MessageHandler, FunctionAction,LogMessageAction, ReplyingToBotValidator, JetstreamMessage, ReplyToSkeetAction, InputIsCommandValidator, InputContainsValidator
+} from 'bsky-event-handlers';
 
-let testAgentDetails: AgentDetails = {
-    name: "test-bot",
-    did: undefined,
-    handle: <string>Bun.env.TEST_BSKY_HANDLE,
-    password: <string>Bun.env.TEST_BSKY_PASSWORD,
-    sessionData: undefined,
-    agent: undefined
+const testAgent = new HandlerAgent(
+    'test-bot',
+    <string>Bun.env.TEST_BSKY_HANDLE,
+    <string>Bun.env.TEST_BSKY_PASSWORD
+);
+
+let jetstreamSubscription: JetstreamSubscription;
+
+let handlers = {
+    post: {
+        c: [
+            new CreateSkeetHandler(
+                [new ReplyingToBotValidator(), new InputIsCommandValidator("plzwait", false)],
+                [new LogMessageAction(), new ReplyToSkeetAction("Reply")],
+                testAgent
+            ),
+            new GoodBotHandler(testAgent)
+        ]
+    },
+    follow: {
+        c: [
+            new MessageHandler(
+                [new NewFollowerForUserValidator(undefined)],
+                [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
+                    console.log("New follower");
+                })],
+                testAgent
+            )
+        ]
+    }
 }
-testAgentDetails = createAgent(testAgentDetails)
-
-let testHandlerController: HandlerController;
-let goodAndBadBotHandler: HandlerController;
 
 async function initialize() {
-    testAgentDetails = await authenticateAgent(testAgentDetails)
-    testHandlerController = new HandlerController(testAgentDetails, [
-        TestHandler,
-        // new OfflineHandler("breakjuni", "Thanks for your help, but testing is over! Check back later ❤️")
-    ], true)
+    await testAgent.authenticate()
+    DebugLog.info("INIT", 'Initialized!')
 
-    goodAndBadBotHandler = new HandlerController(testAgentDetails, [
-        new BadBotHandler(),
-        new GoodBotHandler()
-    ], true)
-    debugLog("INIT", 'Initialized!')
+    jetstreamSubscription = new JetstreamSubscription(
+        handlers,
+        <string>Bun.env.JETSTREAM_URL
+    );
 }
 
-try {
-    await initialize();
-} catch (e) {
-    setTimeout(async function () {
-        await initialize()
-    }, 30000)
-}
+initialize().then(() =>{
+    jetstreamSubscription.createSubscription()
+});
 
-/**
- * The client and listener for the firehose
- */
-const firehoseSubscription = new FirehoseSubscription([testHandlerController, goodAndBadBotHandler], 250, 500);
+
