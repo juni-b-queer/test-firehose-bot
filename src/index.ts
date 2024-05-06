@@ -24,11 +24,6 @@ let handlers = {
                 [new LogMessageAction(), new ReplyToSkeetAction("Reply")],
                 testAgent
             ),
-            // new CreateSkeetHandler(
-            //     [new InputContainsValidator("hello")],
-            //     [new LogMessageAction()],
-            //     testAgent
-            // ),
             new GoodBotHandler(testAgent)
         ]
     },
