@@ -1,12 +1,15 @@
 import {
-    DebugLog,
-    JetstreamSubscription,
-    HandlerAgent,
-    NewFollowerForUserValidator,
     CreateSkeetHandler,
-    GoodBotHandler,
-    MessageHandler, FunctionAction,LogMessageAction, ReplyingToBotValidator, JetstreamMessage, ReplyToSkeetAction, InputIsCommandValidator, InputContainsValidator
+    CreateSkeetMessage,
+    DebugLog,
+    FunctionAction,
+    HandlerAgent,
+    InputContainsValidator,
+    JetstreamSubscription,
+    LogMessageAction,
+    ReplyingToBotValidator
 } from 'bsky-event-handlers';
+import * as console from "console";
 
 const testAgent = new HandlerAgent(
     'test-bot',
@@ -20,22 +23,20 @@ let handlers = {
     post: {
         c: [
             new CreateSkeetHandler(
-                [new ReplyingToBotValidator(), new InputIsCommandValidator("plzwait", false)],
-                [new LogMessageAction(), new ReplyToSkeetAction("Reply")],
+                [new ReplyingToBotValidator()],
+                [
+                    new LogMessageAction(),
+                    new CreateSkeetHandler(
+                        [new InputContainsValidator("test")],
+                        // @ts-ignore
+                        [new FunctionAction((message: CreateSkeetMessage, handlerAgent: HandlerAgent) =>{
+                            console.log("Test code");
+                        })],
+                        testAgent
+                    )
+                ],
                 testAgent
             ),
-            new GoodBotHandler(testAgent)
-        ]
-    },
-    follow: {
-        c: [
-            new MessageHandler(
-                [new NewFollowerForUserValidator(undefined)],
-                [new FunctionAction(( message: JetstreamMessage, agent: HandlerAgent) =>{
-                    console.log("New follower");
-                })],
-                testAgent
-            )
         ]
     }
 }
