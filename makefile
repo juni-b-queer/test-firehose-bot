@@ -1,5 +1,11 @@
 .PHONY: *
 
+run:
+	bun run run
+
+run-jetstream:
+	docker compose up -d jetstream
+
 build:
 	docker compose build
 
@@ -14,4 +20,10 @@ down:
 
 logs:
 	docker compose logs -f
+
+install:
+	bun install
+
+link:
+	bun link bsky-event-handlers
 
