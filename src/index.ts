@@ -1,26 +1,16 @@
 import {
     DebugLog,
-    FunctionAction,
     HandlerAgent,
-    InputContainsValidator,
+    InputIsCommandValidator,
+    IsNewPost,
     JetstreamSubscription,
-    LogMessageAction, MessageHandler,
-    ReplyingToBotValidator,
-    CreateReskeetAction,
-    DeleteReskeetAction,
-    DeleteLikeAction,
-    CreateLikeAction,
-    IntervalSubscription,
-    GoodBotHandler,
-    ActionTakenByUserValidator,
-    IntervalSubscriptionHandlers,
-    AbstractHandler,
-    OpenshockClient,
-    OpenshockControlDeviceAction,
-    LogInputTextAction
+    LogMessageAction,
+    TestValidator,
+    MessageHandler,
+    LogInputTextAction,
+    SimpleFunctionValidator,
+    JetstreamEventCommit
 } from 'bsky-event-handlers';
-
-const openshockClient = new OpenshockClient(<string>Bun.env.OPENSHOCK_API_TOKEN);
 
 
 const testAgent = new HandlerAgent(
@@ -31,41 +21,181 @@ const testAgent = new HandlerAgent(
 
 let jetstreamSubscription: JetstreamSubscription;
 
+let a = {
+    post: {
+        c: 0,
+        d: 0
+    },
+    like: {
+        c: 0,
+        d: 0
+    },
+    follow: {
+        c: 0,
+        d: 0
+    },
+    repost: {
+        c: 0,
+        d: 0
+    }
+}
+console.log(a);
 let handlers = {
+    // post: {
+    //     c: [
+    //         MessageHandler.make(
+    //             [
+    //                 // InputIsCommandValidator.make('dontbreak')
+    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+    //                     if(a.post.c == 0){
+    //                             a.post.c = 1;
+    //                             return true;
+    //                     }else{
+    //                         return false;
+    //                     }
+    //                 })
+    //             ],
+    //             [
+    //                 LogMessageAction.make(),
+    //             ],
+    //             testAgent
+    //         ),
+    //     ],
+    //     d: [
+    //         MessageHandler.make(
+    //             [
+    //                 // InputIsCommandValidator.make('dontbreak')
+    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+    //                     if(a.post.d == 0){
+    //                         a.post.d = 1;
+    //                         return true;
+    //                     }
+    //                 })
+    //             ],
+    //             [
+    //                 LogMessageAction.make(),
+    //             ],
+    //             testAgent
+    //         ),
+    //     ],
+    // },
     like: {
         c: [
             MessageHandler.make(
-                [ActionTakenByUserValidator.make(<string>Bun.env.JUNI_DID)],
                 [
-                    LogInputTextAction.make("Vibrating"),
-                    OpenshockControlDeviceAction.make(
-                        openshockClient,
-                        [<string>Bun.env.SHOCKER_ONE_ID, <string>Bun.env.SHOCKER_TWO_ID],
-                        10,
-                        1000,
-                        'Vibrate'
-                    )
+                    // InputIsCommandValidator.make('dontbreak')
+                    SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+                        if(a.like.c == 0){
+                            if(eventCommit.commit?.record?.subject){
+                                a.like.c = 1;
+                                console.log(eventCommit.commit?.record?.subject)
+                                return true;
+                            }
+                            return false;
+                        }
+                    })
+                ],
+                [
+                    LogMessageAction.make(),
                 ],
                 testAgent
             ),
         ],
-        d: [
+        // d: [
+        //     MessageHandler.make(
+        //         [
+        //             // InputIsCommandValidator.make('dontbreak')
+        //             SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+        //                 if(a.like.d == 0){
+        //                     a.like.d = 1;
+        //                     return true;
+        //                 }
+        //             })
+        //         ],
+        //         [
+        //             LogMessageAction.make(),
+        //         ],
+        //         testAgent
+        //     ),
+        // ],
+    },
+    // follow: {
+    //     c: [
+    //         MessageHandler.make(
+    //             [
+    //                 // InputIsCommandValidator.make('dontbreak')
+    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+    //                     if(a.follow.c == 0){
+    //                         a.follow.c = 1;
+    //                         return true;
+    //                     }
+    //                 })
+    //             ],
+    //             [
+    //                 LogMessageAction.make(),
+    //             ],
+    //             testAgent
+    //         ),
+    //     ],
+    //     d: [
+    //         MessageHandler.make(
+    //             [
+    //                 // InputIsCommandValidator.make('dontbreak')
+    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+    //                     if(a.follow.d == 0){
+    //                         a.follow.d = 1;
+    //                         return true;
+    //                     }
+    //                 })
+    //             ],
+    //             [
+    //                 LogMessageAction.make(),
+    //             ],
+    //             testAgent
+    //         ),
+    //     ],
+    // },
+    repost: {
+        c: [
             MessageHandler.make(
-                [ActionTakenByUserValidator.make(<string>Bun.env.JUNI_DID)],
                 [
-                    LogInputTextAction.make("Shocking"),
-                    OpenshockControlDeviceAction.make(
-                        openshockClient,
-                        [<string>Bun.env.SHOCKER_TWO_ID],
-                        10,
-                        1000,
-                        'Shock'
-                    )
+                    // InputIsCommandValidator.make('dontbreak')
+                    SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+                        if(a.repost.c == 0){
+                            if(eventCommit.commit?.record?.subject){
+                                a.repost.c = 1;
+                                console.log(eventCommit.commit?.record?.subject)
+                                return true;
+                            }
+                            return false;
+                        }
+                    })
+                ],
+                [
+                    LogMessageAction.make(),
                 ],
                 testAgent
             ),
-        ]
+        ],
+        // d: [
+        //     MessageHandler.make(
+        //         [
+        //             // InputIsCommandValidator.make('dontbreak')
+        //             SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
+        //                 if(a.repost.d == 0){
+        //                     a.repost.d = 1;
+        //                     return true;
+        //                 }
+        //             })
+        //         ],
+        //         [
+        //             LogMessageAction.make(),
+        //         ],
+        //         testAgent
+        //     ),
+        // ],
     },
+
 }
 
 async function initialize() {
