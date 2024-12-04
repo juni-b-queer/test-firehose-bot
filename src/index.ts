@@ -1,15 +1,12 @@
 import {
+    CreateLikeAction,
+    CreateSkeetAction,
     DebugLog,
     HandlerAgent,
     InputIsCommandValidator,
-    IsNewPost,
+    JetstreamEventCommit,
     JetstreamSubscription,
-    LogMessageAction,
-    TestValidator,
-    MessageHandler,
-    LogInputTextAction,
-    SimpleFunctionValidator,
-    JetstreamEventCommit
+    MessageHandler
 } from 'bsky-event-handlers';
 
 
@@ -21,179 +18,28 @@ const testAgent = new HandlerAgent(
 
 let jetstreamSubscription: JetstreamSubscription;
 
-let a = {
-    post: {
-        c: 0,
-        d: 0
-    },
-    like: {
-        c: 0,
-        d: 0
-    },
-    follow: {
-        c: 0,
-        d: 0
-    },
-    repost: {
-        c: 0,
-        d: 0
-    }
-}
-console.log(a);
+// @ts-ignore
 let handlers = {
-    // post: {
-    //     c: [
-    //         MessageHandler.make(
-    //             [
-    //                 // InputIsCommandValidator.make('dontbreak')
-    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-    //                     if(a.post.c == 0){
-    //                             a.post.c = 1;
-    //                             return true;
-    //                     }else{
-    //                         return false;
-    //                     }
-    //                 })
-    //             ],
-    //             [
-    //                 LogMessageAction.make(),
-    //             ],
-    //             testAgent
-    //         ),
-    //     ],
-    //     d: [
-    //         MessageHandler.make(
-    //             [
-    //                 // InputIsCommandValidator.make('dontbreak')
-    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-    //                     if(a.post.d == 0){
-    //                         a.post.d = 1;
-    //                         return true;
-    //                     }
-    //                 })
-    //             ],
-    //             [
-    //                 LogMessageAction.make(),
-    //             ],
-    //             testAgent
-    //         ),
-    //     ],
-    // },
-    like: {
+    post: {
         c: [
             MessageHandler.make(
                 [
                     // InputIsCommandValidator.make('dontbreak')
-                    SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-                        if(a.like.c == 0){
-                            if(eventCommit.commit?.record?.subject){
-                                a.like.c = 1;
-                                console.log(eventCommit.commit?.record?.subject)
-                                return true;
-                            }
-                            return false;
-                        }
-                    })
+                    InputIsCommandValidator.make('dontbreak'),
                 ],
                 [
-                    LogMessageAction.make(),
+                    CreateLikeAction.make(MessageHandler.getUriFromMessage, MessageHandler.getCidFromMessage),
+                    CreateSkeetAction.make((handler: HandlerAgent, event: JetstreamEventCommit): string =>{
+                        if(!event.commit.record?.createdAt) return "No timestamp";
+
+                        return event.commit.record?.createdAt;
+                    },
+                        MessageHandler.generateReplyFromMessage)
+
                 ],
                 testAgent
             ),
         ],
-        // d: [
-        //     MessageHandler.make(
-        //         [
-        //             // InputIsCommandValidator.make('dontbreak')
-        //             SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-        //                 if(a.like.d == 0){
-        //                     a.like.d = 1;
-        //                     return true;
-        //                 }
-        //             })
-        //         ],
-        //         [
-        //             LogMessageAction.make(),
-        //         ],
-        //         testAgent
-        //     ),
-        // ],
-    },
-    // follow: {
-    //     c: [
-    //         MessageHandler.make(
-    //             [
-    //                 // InputIsCommandValidator.make('dontbreak')
-    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-    //                     if(a.follow.c == 0){
-    //                         a.follow.c = 1;
-    //                         return true;
-    //                     }
-    //                 })
-    //             ],
-    //             [
-    //                 LogMessageAction.make(),
-    //             ],
-    //             testAgent
-    //         ),
-    //     ],
-    //     d: [
-    //         MessageHandler.make(
-    //             [
-    //                 // InputIsCommandValidator.make('dontbreak')
-    //                 SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-    //                     if(a.follow.d == 0){
-    //                         a.follow.d = 1;
-    //                         return true;
-    //                     }
-    //                 })
-    //             ],
-    //             [
-    //                 LogMessageAction.make(),
-    //             ],
-    //             testAgent
-    //         ),
-    //     ],
-    // },
-    repost: {
-        c: [
-            MessageHandler.make(
-                [
-                    // InputIsCommandValidator.make('dontbreak')
-                    SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-                        if(a.repost.c == 0){
-                            if(eventCommit.commit?.record?.subject){
-                                a.repost.c = 1;
-                                console.log(eventCommit.commit?.record?.subject)
-                                return true;
-                            }
-                            return false;
-                        }
-                    })
-                ],
-                [
-                    LogMessageAction.make(),
-                ],
-                testAgent
-            ),
-        ],
-        // d: [
-        //     MessageHandler.make(
-        //         [
-        //             // InputIsCommandValidator.make('dontbreak')
-        //             SimpleFunctionValidator.make((handlerAgent: HandlerAgent, eventCommit: JetstreamEventCommit) => {
-        //                 if(a.repost.d == 0){
-        //                     a.repost.d = 1;
-        //                     return true;
-        //                 }
-        //             })
-        //         ],
-        //         [
-        //             LogMessageAction.make(),
-        //         ],
-        //         testAgent
-        //     ),
-        // ],
     },
 
 }
