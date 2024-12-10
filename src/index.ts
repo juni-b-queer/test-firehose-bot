@@ -1,26 +1,13 @@
 import {
-    DebugLog,
-    FunctionAction,
-    HandlerAgent,
-    InputContainsValidator,
-    JetstreamSubscription,
-    LogMessageAction, MessageHandler,
-    ReplyingToBotValidator,
-    CreateReskeetAction,
-    DeleteReskeetAction,
-    DeleteLikeAction,
     CreateLikeAction,
-    IntervalSubscription,
-    GoodBotHandler,
-    ActionTakenByUserValidator,
-    IntervalSubscriptionHandlers,
-    AbstractHandler,
-    OpenshockClient,
-    OpenshockControlDeviceAction,
-    LogInputTextAction
+    CreateSkeetAction,
+    DebugLog,
+    HandlerAgent,
+    InputIsCommandValidator,
+    JetstreamEventCommit,
+    JetstreamSubscription,
+    MessageHandler
 } from 'bsky-event-handlers';
-
-const openshockClient = new OpenshockClient(<string>Bun.env.OPENSHOCK_API_TOKEN);
 
 
 const testAgent = new HandlerAgent(
@@ -31,41 +18,30 @@ const testAgent = new HandlerAgent(
 
 let jetstreamSubscription: JetstreamSubscription;
 
+// @ts-ignore
 let handlers = {
-    like: {
+    post: {
         c: [
             MessageHandler.make(
-                [ActionTakenByUserValidator.make(<string>Bun.env.JUNI_DID)],
                 [
-                    LogInputTextAction.make("Vibrating"),
-                    OpenshockControlDeviceAction.make(
-                        openshockClient,
-                        [<string>Bun.env.SHOCKER_ONE_ID, <string>Bun.env.SHOCKER_TWO_ID],
-                        10,
-                        1000,
-                        'Vibrate'
-                    )
+                    // InputIsCommandValidator.make('dontbreak')
+                    InputIsCommandValidator.make('dontbreak'),
+                ],
+                [
+                    CreateLikeAction.make(MessageHandler.getUriFromMessage, MessageHandler.getCidFromMessage),
+                    CreateSkeetAction.make((handler: HandlerAgent, event: JetstreamEventCommit): string =>{
+                        if(!event.commit.record?.createdAt) return "No timestamp";
+
+                        return event.commit.record?.createdAt;
+                    },
+                        MessageHandler.generateReplyFromMessage)
+
                 ],
                 testAgent
             ),
         ],
-        d: [
-            MessageHandler.make(
-                [ActionTakenByUserValidator.make(<string>Bun.env.JUNI_DID)],
-                [
-                    LogInputTextAction.make("Shocking"),
-                    OpenshockControlDeviceAction.make(
-                        openshockClient,
-                        [<string>Bun.env.SHOCKER_TWO_ID],
-                        10,
-                        1000,
-                        'Shock'
-                    )
-                ],
-                testAgent
-            ),
-        ]
     },
+
 }
 
 async function initialize() {
