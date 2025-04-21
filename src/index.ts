@@ -1,15 +1,18 @@
 import {
     CreateLikeAction,
     CreateSkeetAction,
-    DebugLog,
+    DebugLog, DebugLogAction,
     HandlerAgent,
     InputIsCommandValidator,
     JetstreamEventCommit,
-    JetstreamSubscription,
-    MessageHandler
+    JetstreamSubscription, LogInputTextAction,
+    MessageHandler, TestValidator
 } from 'bsky-event-handlers';
-
-
+process.on('SIGINT', () => {
+    console.log('Received SIGINT signal, shutting down gracefully...');
+    // Perform cleanup tasks here
+    process.exit(0);
+});
 const testAgent = new HandlerAgent(
     'test-bot',
     <string>Bun.env.TEST_BSKY_HANDLE,
@@ -26,16 +29,23 @@ let handlers = {
                 [
                     // InputIsCommandValidator.make('dontbreak')
                     InputIsCommandValidator.make('dontbreak'),
+                    TestValidator.make(true)
                 ],
                 [
-                    CreateLikeAction.make(MessageHandler.getUriFromMessage, MessageHandler.getCidFromMessage),
-                    CreateSkeetAction.make((handler: HandlerAgent, event: JetstreamEventCommit): string =>{
-                        if(!event.commit.record?.createdAt) return "No timestamp";
-
-                        return event.commit.record?.createdAt;
-                    },
-                        MessageHandler.generateReplyFromMessage)
-
+                    LogInputTextAction.make('text')
+                ],
+                testAgent
+            ),
+        ],
+    },
+    like: {
+        c: [
+            MessageHandler.make(
+                [
+                    TestValidator.make(false)
+                ],
+                [
+                    LogInputTextAction.make('text')
                 ],
                 testAgent
             ),
